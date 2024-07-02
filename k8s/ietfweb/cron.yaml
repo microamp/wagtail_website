@@ -1,0 +1,34 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: "mgmt-hourly"
+spec:
+  schedule: "0 * * * *"
+  timeZone: "Etc/UTC"
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      backoffLimit: 0 # No retries
+      template:
+        spec:
+          restartPolicy: Never
+          volumes:
+            - name: www-cfg
+              configMap:
+                name: files-cfgmap
+          containers:
+            - name: "mgmt-hourly"
+              image: "ghcr.io/ietf-tools/www:$APP_IMAGE_TAG"
+              imagePullPolicy: Always
+              volumeMounts:
+                - name: settings-local-volume
+                  mountPath: /app/ietf/settings/local.py
+                  subPath: local.py
+                  readOnly: true
+              env:
+                - name: "DJANGO_SETTINGS_MODULE"
+                  value: "ietf.settings.production"
+                # ensures the pod gets recreated on every deploy:
+                - name: "DEPLOY_UID"
+                  value: "$DEPLOY_UID"
+              command: ["python", "/app/manage.py", "publish_scheduled"]
