@@ -3,9 +3,9 @@ kind: CronJob
 metadata:
   name: cron-weekly
 spec:
-  schedule: "30 0 * * 0"
+  schedule: "30 0 * * 0" # "At 00:30 on Sunday."
   timeZone: "Etc/UTC"
-  concurrencyPolicy: Forbid
+  concurrencyPolicy: Forbid # No concurrent runs
   jobTemplate:
     spec:
       backoffLimit: 0 # No retries
